@@ -1,0 +1,35 @@
+John Doe
+johndoe@example.com | San Francisco, CA | linkedin.com/in/johndoe
+
+Summary
+Data-driven software engineer with 4 years of experience building scalable backend services and machine learning pipelines. Passionate about delivering high-impact solutions and optimizing system architecture.
+
+Experience
+
+Software Engineer | TechNova Solutions
+Jan 2021 - Present
+- Optimized database queries, reducing response time by 40%
+- Delivered a real-time data processing pipeline handling 10k events/second using Python and Apache Kafka
+- Increased API throughput by 25% by migrating from Flask to FastAPI
+- Mentored 3 junior developers and established code review best practices
+
+Data Analyst Intern | Insights Corp
+May 2020 - Dec 2020
+- Automated daily reporting tasks using Python and Pandas, saving 15 hours per week
+- Analyzed user engagement metrics with SQL to identify a 10% drop in retention
+- Collaborated with cross-functional teams to improve data quality
+
+Education
+
+B.S. in Computer Science | University of California, Berkeley
+Graduated May 2020
+
+Projects
+
+- E-commerce Recommendation Engine: Built a collaborative filtering model using scikit-learn and Python. Improved product click-through rate by 18%.
+- Personal Portfolio: Developed a responsive web app using React and Tailwind CSS to showcase projects.
+
+Skills
+Programming: Python, SQL, JavaScript, Java
+Frameworks & Tools: FastAPI, Pandas, React, Docker, Git, AWS
+Soft Skills: Leadership, Problem Solving, Teamwork, Communication
