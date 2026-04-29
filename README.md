@@ -1,6 +1,5 @@
 # Career Decoder
 
-Live demo: https://career-decoder-by-jsh.streamlit.app/
 **Career Decoder** is an advanced Career Intelligence System built with Streamlit. It parses resumes (PDF/TXT), extracts structured career evidence, scores role capability, and generates concise learning recommendations based on the candidate's profile.
 
 ## ✨ Key Features
@@ -10,6 +9,8 @@ Live demo: https://career-decoder-by-jsh.streamlit.app/
 - **Skill Gap Analysis**: Identifies missing skills and provides actionable learning recommendations.
 - **Evidence Mapping**: Visualizes the strength and coverage of the extracted resume evidence.
 - **Polished UI**: A modern, responsive dashboard with a clean light-mode aesthetic, featuring interactive Plotly charts and robust data presentation.
+
+**Live demo: https://career-decoder-by-jsh.streamlit.app/**
 
 ## 🚀 Getting Started
 
