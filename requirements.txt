@@ -4,3 +4,4 @@ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1
 PyMuPDF>=1.23.0
 plotly>=5.18.0
 pandas>=2.1.0
+numpy==1.26.4  # Pin for spacy compatibility
