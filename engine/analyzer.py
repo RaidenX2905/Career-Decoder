@@ -1,410 +1,268 @@
 import re
+from engine.skill_taxonomy import (
+    extract_taxonomy_skills,
+    get_skill_display,
+    get_prerequisites_path,
+    SKILL_TAXONOMY
+)
+from engine.xyz_analyzer import analyze_all_bullets
 
-
-TECH_SKILLS = {
-    "python": ["python"],
-    "java": ["java"],
-    "c++": ["c++", "cpp"],
-    "javascript": ["javascript", "js"],
-    "typescript": ["typescript", "ts"],
-    "react": ["react", "reactjs"],
-    "node": ["node", "nodejs", "node.js"],
-    "sql": ["sql", "mysql", "postgres", "postgresql"],
-    "mongodb": ["mongodb", "mongo"],
-    "machine learning": ["machine learning", "ml", "scikit-learn", "sklearn"],
-    "deep learning": ["deep learning", "tensorflow", "keras", "pytorch", "lstm"],
-    "data analysis": ["data analysis", "eda", "pandas", "numpy"],
-    "data visualization": ["matplotlib", "seaborn", "plotly", "power bi", "tableau"],
-    "html": ["html"],
-    "css": ["css", "tailwind"],
-    "git": ["git", "github"],
-    "docker": ["docker"],
-    "aws": ["aws", "amazon web services"],
-    "fastapi": ["fastapi"],
-}
-
-SKILL_DISPLAY = {
-    "c++": "C++",
-    "javascript": "JavaScript",
-    "typescript": "TypeScript",
-    "node": "Node.js",
-    "sql": "SQL",
-    "mongodb": "MongoDB",
-    "machine learning": "Machine Learning",
-    "deep learning": "Deep Learning",
-    "data analysis": "Data Analysis",
-    "data visualization": "Data Visualization",
-    "html": "HTML",
-    "css": "CSS",
-    "git": "Git",
-    "aws": "AWS",
-    "fastapi": "FastAPI",
+# 16 High-Precision Industry Roles with explicit core, supporting, and bonus profiles
+ROLE_SPECIFICATIONS = {
+    "AI / GenAI Engineer": {
+        "core": ["python", "llm / genai", "nlp", "deep learning"],
+        "supporting": ["machine learning", "fastapi", "docker", "mlops", "git"],
+        "bonus": ["aws", "kubernetes"],
+        "category": "AI & Data",
+        "description": "Architects, fine-tunes, and deploys production RAG systems, LLM agents, and deep learning backbones."
+    },
+    "Machine Learning Engineer": {
+        "core": ["python", "machine learning", "deep learning", "docker"],
+        "supporting": ["mlops", "sql", "fastapi", "git", "data analysis"],
+        "bonus": ["aws", "kubernetes"],
+        "category": "AI & Data",
+        "description": "Bridges machine learning research and distributed deployment with reproducible training pipelines."
+    },
+    "Data Scientist": {
+        "core": ["python", "machine learning", "data analysis", "sql"],
+        "supporting": ["data visualization", "deep learning", "nlp", "git"],
+        "bonus": ["aws", "docker"],
+        "category": "AI & Data",
+        "description": "Transforms high-dimensional enterprise datasets into predictive statistical models and executive insights."
+    },
+    "Data Analyst": {
+        "core": ["sql", "data analysis", "data visualization"],
+        "supporting": ["python", "data warehouse", "git"],
+        "bonus": ["machine learning", "aws"],
+        "category": "AI & Data",
+        "description": "Designs executive business dashboards, performs exploratory analyses, and standardizes BI pipelines."
+    },
+    "Data Engineer": {
+        "core": ["python", "sql", "data warehouse", "kafka"],
+        "supporting": ["spark", "docker", "aws", "git"],
+        "bonus": ["kubernetes", "terraform"],
+        "category": "Data Engineering",
+        "description": "Builds resilient streaming ingestion buses, lakehouse architectures, and dimensional data warehouses."
+    },
+    "Backend Developer": {
+        "core": ["python", "node", "java", "sql", "rest api"],
+        "supporting": ["fastapi", "docker", "git", "microservices", "redis"],
+        "bonus": ["aws", "kubernetes", "ci/cd"],
+        "category": "Software Engineering",
+        "description": "Constructs high-concurrency microservices, robust REST APIs, cache layers, and relational schema designs."
+    },
+    "Frontend Developer": {
+        "core": ["html", "css", "javascript", "react"],
+        "supporting": ["typescript", "nextjs", "git", "testing"],
+        "bonus": ["redux", "graphql"],
+        "category": "Software Engineering",
+        "description": "Builds responsive, high-performance web applications with modular client architectures."
+    },
+    "Full Stack Developer": {
+        "core": ["javascript", "react", "node", "sql", "html", "css"],
+        "supporting": ["typescript", "docker", "git", "rest api", "fastapi"],
+        "bonus": ["aws", "redis"],
+        "category": "Software Engineering",
+        "description": "Full lifecycle engineering across client interfaces, business microservices, caching, and databases."
+    },
+    "DevOps / Cloud Engineer": {
+        "core": ["docker", "kubernetes", "aws", "ci/cd"],
+        "supporting": ["terraform", "linux", "git"],
+        "bonus": ["python", "gcp"],
+        "category": "Cloud & Infrastructure",
+        "description": "Automates cloud environments, maintains Kubernetes clusters, and codifies infrastructure as code."
+    },
+    "Site Reliability Engineer (SRE)": {
+        "core": ["linux", "kubernetes", "docker"],
+        "supporting": ["python", "aws", "terraform", "ci/cd", "git"],
+        "bonus": ["go", "microservices"],
+        "category": "Cloud & Infrastructure",
+        "description": "Ensures uptime SLAs, auto-healing infrastructure, observability metrics, and incident recovery."
+    },
+    "Cybersecurity / AppSec Engineer": {
+        "core": ["cybersecurity", "linux", "python"],
+        "supporting": ["docker", "git", "aws", "rest api"],
+        "bonus": ["kubernetes", "sql"],
+        "category": "Security",
+        "description": "Audits application vulnerabilities, implements zero-trust architectures, and secures cloud perimeters."
+    },
+    "QA & Automation Engineer": {
+        "core": ["testing", "python", "git"],
+        "supporting": ["javascript", "ci/cd", "rest api", "docker"],
+        "bonus": ["sql", "react"],
+        "category": "Quality",
+        "description": "Designs automated end-to-end regression frameworks, performance benchmarks, and CI testing gates."
+    },
+    "Product Manager (Technical)": {
+        "core": ["sql", "data analysis", "rest api"],
+        "supporting": ["git", "data visualization", "testing"],
+        "bonus": ["python", "docker"],
+        "category": "Product & Strategy",
+        "description": "Aligns engineering execution with commercial objectives, technical specifications, and user data metrics."
+    },
 }
 
 SOFT_SKILLS = [
-    "communication",
-    "leadership",
-    "teamwork",
-    "problem solving",
-    "critical thinking",
-    "collaboration",
-    "mentoring",
+    "communication", "leadership", "teamwork", "problem solving",
+    "critical thinking", "collaboration", "mentoring", "agile", "scrum", "ownership"
 ]
 
-ROLE_SKILLS = {
-    "Frontend Developer": ["html", "css", "javascript", "react"],
-    "Backend Developer": ["python", "java", "sql", "node", "fastapi"],
-    "Full Stack Developer": ["html", "css", "javascript", "react", "node", "sql"],
-    "Data Analyst": ["python", "sql", "data analysis", "data visualization"],
-    "Data Scientist": ["python", "machine learning", "data analysis", "data visualization"],
-    "ML Engineer": ["python", "machine learning", "deep learning", "sql"],
-}
-
-LEARNING_MAP = {
-    "html": "Build semantic HTML layouts",
-    "css": "Practice responsive CSS and layout systems",
-    "javascript": "Strengthen modern JavaScript",
-    "typescript": "Learn TypeScript fundamentals",
-    "react": "Build React projects with state and routing",
-    "node": "Build REST APIs with Node.js",
-    "fastapi": "Build production APIs with FastAPI",
-    "sql": "Practice SQL joins, aggregation, and schema design",
-    "java": "Build backend services with Java",
-    "python": "Practice Python scripting and data structures",
-    "machine learning": "Learn supervised ML workflows",
-    "deep learning": "Learn neural networks and model training",
-    "data analysis": "Practice EDA with Pandas and NumPy",
-    "data visualization": "Build dashboards with visualization libraries",
-}
-
-SECTION_ALIASES = {
-    "projects": {"projects", "project", "academic projects", "personal projects"},
-    "skills": {"skills", "technical skills", "tools", "technologies"},
-    "experience": {"experience", "work experience", "employment"},
-    "education": {"education", "academics"},
-    "summary": {"summary", "profile", "objective"},
-    "certifications": {"certifications", "certificates"},
+SOFT_PATTERNS = {
+    s: re.compile(rf"\b{re.escape(s)}\b", re.IGNORECASE) for s in SOFT_SKILLS
 }
 
 
-def normalize(text):
-    return text.lower()
+def display_skill(canonical_key: str) -> str:
+    return get_skill_display(canonical_key)
 
 
-def safe_list(value):
-    return value if isinstance(value, list) else []
+def evaluate_role_suitability(skills_dict: dict, text: str):
+    """
+    Evaluates candidate skills against 13 core industry specializations.
+    Deterministic multi-tier scoring:
+    - Core Skills (55% weight)
+    - Supporting Skills (25% weight)
+    - Bonus Integrations (10% weight)
+    - Depth of Evidence (10% weight)
+    """
+    candidate_skills = set(skills_dict.keys())
+    results = []
+
+    for role_name, spec in ROLE_SPECIFICATIONS.items():
+        core = spec.get("core", [])
+        supporting = spec.get("supporting", [])
+        bonus = spec.get("bonus", [])
+
+        # Backend developer qualification rule
+        matched_core = [s for s in core if s in candidate_skills]
+        if role_name == "Backend Developer":
+            core_ratio = min(len(matched_core) / 2.0, 1.0)
+        else:
+            core_ratio = len(matched_core) / len(core) if core else 1.0
+
+        matched_supporting = [s for s in supporting if s in candidate_skills]
+        supporting_ratio = len(matched_supporting) / len(supporting) if supporting else 0.5
+
+        matched_bonus = [s for s in bonus if s in candidate_skills]
+        bonus_pts = min(len(matched_bonus) * 3, 10)
+
+        depth_pts = sum(4 if skills_dict.get(s) == "Strong" else (2 if skills_dict.get(s) == "Intermediate" else 0) for s in matched_core)
+
+        raw_score = (core_ratio * 55) + (supporting_ratio * 25) + bonus_pts + min(depth_pts, 10)
+        final_score = int(min(max(raw_score, 0), 100))
+
+        missing_core = [s for s in core if s not in candidate_skills]
+        missing_supporting = [s for s in supporting if s not in candidate_skills]
+
+        results.append({
+            "role": role_name,
+            "match_percentage": final_score,
+            "category": spec.get("category", "General"),
+            "description": spec.get("description", ""),
+            "matched_skills": [get_skill_display(s) for s in matched_core + matched_supporting],
+            "missing_skills": missing_core + missing_supporting,
+            "missing_core": missing_core,
+            "prerequisites_roadmap": [get_skill_display(s) for s in get_prerequisites_path(missing_core[:3])],
+        })
+
+    return sorted(results, key=lambda x: x["match_percentage"], reverse=True)
 
 
-def safe_dict(value):
-    return value if isinstance(value, dict) else {}
+def calculate_ats_scoring_index(skills_dict: dict, bullets_analysis: list, sections: dict, text: str):
+    """
+    Explainable, 5-Dimension Transparent Scoring Model:
+    1. Technical Stack Breadth & Depth (30 pts)
+    2. Quantified Project Impact & Metrics (25 pts)
+    3. Structural Completeness & Formatting (15 pts)
+    4. Seniority & Experience Signals (15 pts)
+    5. Soft Skills & Communication Evidence (15 pts)
+    """
+    # 1. Tech stack
+    tech_count = len(skills_dict)
+    strong_count = sum(1 for v in skills_dict.values() if v == "Strong")
+    tech_pts = min(tech_count * 2.5 + strong_count * 2, 30)
 
+    # 2. Project impact
+    if bullets_analysis:
+        avg_score = sum(b.get("score", 0) for b in bullets_analysis) / len(bullets_analysis)
+        project_pts = min((avg_score / 100) * 25 + len(bullets_analysis) * 1.5, 25)
+    else:
+        project_pts = 10
 
-def section_name(line):
-    clean = re.sub(r"[^A-Za-z ]", "", line).strip().lower()
-    for canonical, aliases in SECTION_ALIASES.items():
-        if clean in aliases:
-            return canonical
-    return ""
+    # 3. Format integrity
+    struct_pts = 0
+    if "experience" in sections: struct_pts += 5
+    if "skills" in sections: struct_pts += 5
+    if "projects" in sections or "education" in sections: struct_pts += 5
 
+    # 4. Seniority signal
+    lines = text.splitlines()
+    exp_pts = 14 if len(lines) > 25 else 9
 
-def split_sections(text):
-    sections = {}
-    current = "header"
-    sections[current] = []
+    # 5. Soft skills
+    soft_found = [s for s, pat in SOFT_PATTERNS.items() if pat.search(text)]
+    soft_pts = min(len(soft_found) * 3, 15)
 
-    for raw_line in text.splitlines():
-        line = raw_line.strip()
-        if not line:
-            continue
-        detected = section_name(line)
-        if detected:
-            current = detected
-            sections.setdefault(current, [])
-            continue
-        sections.setdefault(current, []).append(line)
-
-    return {key: "\n".join(value).strip() for key, value in sections.items()}
-
-
-def clean_bullet(line):
-    return line.strip().strip("-*").strip()
-
-
-def display_skill(skill):
-    return SKILL_DISPLAY.get(skill, skill.title())
-
-
-def extract_skills(text):
-    lower = normalize(text)
-    tech_found = {}
-
-    for skill, keywords in TECH_SKILLS.items():
-        count = 0
-        for keyword in keywords:
-            count += len(re.findall(rf"\b{re.escape(keyword)}\b", lower))
-        if count >= 3:
-            tech_found[skill] = "Strong"
-        elif count == 2:
-            tech_found[skill] = "Intermediate"
-        elif count == 1:
-            tech_found[skill] = "Basic"
-
-    soft_found = [skill for skill in SOFT_SKILLS if re.search(rf"\b{re.escape(skill)}\b", lower)]
-
-    return {
-        "technical": tech_found,
-        "soft": soft_found,
+    breakdown = {
+        "Technical Stack": int(tech_pts),
+        "Project Impact": int(project_pts),
+        "Format Integrity": int(struct_pts),
+        "Seniority Signal": int(exp_pts),
+        "Soft Skills": int(soft_pts),
     }
 
-
-def extract_education(text):
-    section = split_sections(text).get("education", "")
-    if not section:
-        return []
-    return [clean_bullet(line) for line in section.splitlines() if clean_bullet(line)]
+    total_score = int(min(max(sum(breakdown.values()), 15), 100))
+    return total_score, breakdown, soft_found
 
 
-def extract_certifications(text):
-    section = split_sections(text).get("certifications", "")
-    if not section:
-        return []
-    return [clean_bullet(line) for line in section.splitlines() if clean_bullet(line)]
-
-
-def extract_experience(text):
-    section = split_sections(text).get("experience", "")
-    if not section:
-        return []
-
-    entries = []
-    current = None
-    duration_re = re.compile(
-        r"\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\s+\d{4}\s*[-–]\s*(?:present|current|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\s+\d{4}|\d{4})",
-        re.IGNORECASE,
-    )
-
-    for raw_line in section.splitlines():
-        line = clean_bullet(raw_line)
-        if not line:
-            continue
-
-        duration_match = duration_re.search(line)
-        if "|" in line and not line.startswith("-"):
-            role, company = [part.strip() for part in line.split("|", 1)]
-            current = {
-                "role": role,
-                "company": company,
-                "duration": "",
-                "key_responsibilities": [],
-            }
-            entries.append(current)
-            continue
-
-        if duration_match and current:
-            current["duration"] = duration_match.group(0)
-            continue
-
-        if current:
-            current["key_responsibilities"].append(line)
-
-    return entries
-
-
-SKILL_LEVEL_WEIGHT = {
-    "Basic": 0.45,
-    "Intermediate": 0.70,
-    "Strong": 1.0,
-}
-
-
-ROLE_EVIDENCE = {
-    "Frontend Developer": ["frontend", "front end", "react", "portfolio", "responsive web"],
-    "Backend Developer": ["backend", "api", "database", "fastapi", "flask", "server"],
-    "Full Stack Developer": ["full stack", "frontend", "backend", "react", "api"],
-    "Data Analyst": ["data analyst", "eda", "reporting", "dashboard", "visualization"],
-    "Data Scientist": ["data scientist", "machine learning", "model", "regression", "classification"],
-    "ML Engineer": ["ml engineer", "machine learning", "model", "pipeline", "tensorflow", "pytorch"],
-}
-
-
-def role_evidence_bonus(role, text):
-    lower = normalize(text)
-    hits = sum(1 for keyword in ROLE_EVIDENCE.get(role, []) if keyword in lower)
-    return min(hits * 4, 12)
-
-
-def match_roles(skills, text=""):
+def extract_project_summaries(text: str):
+    projects_section = ""
+    for sec_name in ["projects", "experience"]:
+        lines = text.splitlines()
+        # Find section boundary
+        if sec_name in text.lower():
+            projects_section = text
+            break
+    
+    bullets = analyze_all_bullets(projects_section if projects_section else text)
     results = []
-    tech = safe_dict(skills)
-
-    for role, required in ROLE_SKILLS.items():
-        matched = [skill for skill in required if skill in tech]
-        missing = [skill for skill in required if skill not in tech]
-        weighted = sum(SKILL_LEVEL_WEIGHT.get(tech.get(skill, "Basic"), 0.45) for skill in required if skill in tech)
-        base_score = (weighted / len(required)) * 88
-        score = int(min(base_score + role_evidence_bonus(role, text), 96))
-        if score >= 92 and missing:
-            score = 88
-        if score:
-            results.append({
-                "role": role,
-                "match_percentage": score,
-                "matched_skills": matched,
-                "missing_skills": missing,
-            })
-
-    return sorted(results, key=lambda item: item["match_percentage"], reverse=True)
-
-
-def suggest_roles(skills, text=""):
-    suggestions = []
-    matches = match_roles(skills, text)
-
-    for match in matches:
-        missing = match.get("missing_skills", [])
-        matched = match.get("matched_skills", [])
-        reason = "Matched skills: " + ", ".join(matched) if matched else "Partial skill overlap"
-        suggestions.append({
-            "role": match["role"],
-            "match_score": match["match_percentage"],
-            "reason": reason,
-            "missing_skills": missing,
-            "recommended_learning": [LEARNING_MAP.get(skill, f"Learn {skill}") for skill in missing[:3]],
+    for b in bullets:
+        results.append({
+            "summary": b["original"],
+            "impact_score": b["score"],
+            "rating": "High Impact" if b["score"] >= 75 else ("Solid Evidence" if b["score"] >= 45 else "Unquantified"),
+            "is_xyz": b["is_xyz_compliant"],
+            "metrics": b["metrics_found"],
+            "feedback": b["feedback"]
         })
-
-    existing = {item["role"] for item in suggestions}
-    for role, required in ROLE_SKILLS.items():
-        if role in existing:
-            continue
-        missing = list(required)
-        suggestions.append({
-            "role": role,
-            "match_score": 0,
-            "reason": "No direct required skill evidence found",
-            "missing_skills": missing,
-            "recommended_learning": [LEARNING_MAP.get(skill, f"Learn {skill}") for skill in missing[:3]],
-        })
-
-    return sorted(suggestions, key=lambda item: item["match_score"], reverse=True)
+    return results[:4]
 
 
-def extract_projects(text):
-    sections = split_sections(text)
-    source = sections.get("projects") or ""
-    if not source:
-        source = sections.get("experience") or text
-
-    chunks = []
-    buffer = []
-
-    for line in source.splitlines():
-        item = line.strip(" -*\t")
-        if not item:
-            continue
-        if re.match(r"^[A-Za-z /+.-]+:\s*[\w, .+-]+$", item) and len(item) < 90:
-            continue
-        if len(item) >= 35:
-            chunks.append(item)
-        elif buffer:
-            buffer.append(item)
-
-    if not chunks:
-        chunks = [part.strip(" -*\t") for part in re.split(r"\n|\.", source) if len(part.strip()) >= 35]
-
-    deduped = []
-    seen = set()
-    for item in chunks:
-        key = normalize(item)
-        if key not in seen:
-            seen.add(key)
-            deduped.append(item)
-
-    return deduped[:6]
-
-
-def score_project(text):
-    lower = normalize(text)
-    impact_words = [
-        "improved", "increased", "reduced", "optimized", "achieved",
-        "built", "developed", "created", "performed", "identified",
-        "automated", "delivered", "analyzed", "implemented",
-    ]
-    metrics = re.findall(r"\d+%|\d+x|\d+k|\d+", lower)
-    technologies = sum(1 for skill, keywords in TECH_SKILLS.items() if any(keyword in lower for keyword in keywords))
-
-    score = len(metrics) * 10
-    score += sum(8 for word in impact_words if word in lower)
-    score += min(technologies * 4, 24)
-    return min(score, 100)
-
-
-def analyze_projects(text):
-    return [
-        {
-            "summary": project[:140],
-            "impact_score": score_project(project),
-        }
-        for project in extract_projects(text)
-    ]
-
-
-def infer_role(role_matches):
-    if not role_matches:
-        return "Generalist"
-    return role_matches[0]["role"]
-
-
-def detect_weaknesses(skills, role_matches, projects):
-    weaknesses = []
-    tech = safe_dict(skills).get("technical", {})
-    top = role_matches[0] if role_matches else None
-
-    if top:
-        for skill in top.get("missing_skills", [])[:3]:
-            weaknesses.append(f"Add {skill} to strengthen {top['role']} fit.")
-
-    if not projects:
-        weaknesses.append("Add project entries with tools, outcome, and measurable impact.")
-
-    if "git" not in tech:
-        weaknesses.append("Add Git or GitHub evidence.")
-
-    if not role_matches:
-        weaknesses.append("Focus resume toward one target role.")
-
-    return weaknesses[:5]
-
-
-def run_analysis(parsed_data):
-    text = safe_dict(parsed_data).get("raw_text", "")
-    if not text:
+def run_analysis(parsed_data: dict):
+    raw_text = parsed_data.get("raw_text", "")
+    if not raw_text:
         return {}
 
-    skills = extract_skills(text)
-    role_matches = safe_list(match_roles(skills.get("technical", {}), text))
-    projects = safe_list(analyze_projects(text))
+    sections = parsed_data.get("sections", {})
+    tech_skills = extract_taxonomy_skills(raw_text)
+    bullets = analyze_all_bullets(raw_text)
+    role_matches = evaluate_role_suitability(tech_skills, raw_text)
+    ats_score, ats_breakdown, soft_skills = calculate_ats_scoring_index(tech_skills, bullets, sections, raw_text)
+    projects = extract_project_summaries(raw_text)
+
+    top_role = role_matches[0]["role"] if role_matches else "Software Engineer"
     top_score = role_matches[0]["match_percentage"] if role_matches else 0
-    suggested_roles = suggest_roles(skills.get("technical", {}), text)
-    structured_resume = {
-        "name": safe_dict(parsed_data).get("name", ""),
-        "education": extract_education(text),
-        "experience": extract_experience(text),
-        "skills": {
-            "technical": [display_skill(skill) for skill in skills.get("technical", {}).keys()],
-            "soft": [skill.title() for skill in skills.get("soft", [])],
-        },
-        "projects": [project["summary"] for project in projects],
-        "certifications": extract_certifications(text),
-        "suggested_roles": suggested_roles,
-    }
 
     return {
-        "skills": skills,
+        "skills": {
+            "technical": tech_skills,
+            "soft": soft_skills,
+        },
         "role_matches": role_matches,
         "projects": projects,
-        "inferred_role": infer_role(role_matches),
+        "bullets_analysis": bullets,
+        "inferred_role": top_role,
         "top_match_score": top_score,
-        "weaknesses": detect_weaknesses(skills, role_matches, projects),
-        "suggested_roles": suggested_roles,
-        "structured_resume": structured_resume,
+        "ats_score": ats_score,
+        "ats_breakdown": ats_breakdown,
     }
