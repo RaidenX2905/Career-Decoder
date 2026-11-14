@@ -233,7 +233,8 @@ def render_landing():
             "Upload",
             type=["pdf", "docx", "txt"],
             accept_multiple_files=False,
-            label_visibility="collapsed"
+            label_visibility="collapsed",
+            key="ephemeral_resume_uploader"
         )
 
         analyze_btn = st.button("Evaluate Resume", use_container_width=True)
@@ -279,7 +280,12 @@ def render_dashboard(parsed, analysis):
         )
     with col_nav_r:
         if st.button("← New Evaluation", use_container_width=True):
+            # Complete ephemeral memory purge: zero-out session state and garbage collect
+            for k in list(st.session_state.keys()):
+                del st.session_state[k]
             st.session_state.result = None
+            import gc
+            gc.collect()
             st.rerun()
 
     # Candidate Meta Strip
