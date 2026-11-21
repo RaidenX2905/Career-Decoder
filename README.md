@@ -2,7 +2,11 @@
 
 **Career Decoder** is an advanced Career Intelligence System built with Streamlit. It parses resumes (PDF/TXT), extracts structured career evidence, scores role capability, and generates concise learning recommendations based on the candidate's profile.
 
-## ✨ Key Features
+**Live Demo**: [https://careerdecoderbyjsh.streamlit.app/](https://careerdecoderbyjsh.streamlit.app/)
+
+---
+
+## Key Features
 
 - **Intelligent Parsing**: Extracts candidate name, location, title, education, experience, projects, certifications, and skills.
 - **Role Capability Scoring**: Models candidate fit against various roles and provides a capability percentage.
@@ -10,9 +14,9 @@
 - **Evidence Mapping**: Visualizes the strength and coverage of the extracted resume evidence.
 - **Polished UI**: A modern, responsive dashboard with a clean light-mode aesthetic, featuring interactive Plotly charts and robust data presentation.
 
-**Live demo: https://career-decoder-by-jsh.streamlit.app/**
+---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -37,7 +41,9 @@
    streamlit run app.py
    ```
 
-## 📁 Project Structure
+---
+
+## Project Structure
 
 ```text
 ├── app.py                 # Main Streamlit application
@@ -51,10 +57,14 @@
 └── requirements.txt       # Project dependencies
 ```
 
-## ☁️ Deployment
+---
+
+## Deployment
 
 This application is ready to be deployed on platforms like [Streamlit Community Cloud](https://streamlit.io/cloud), [Render](https://render.com/), or [Hugging Face Spaces](https://huggingface.co/spaces). Simply point the deployment service to `app.py` as the entry point.
 
-## 📄 License
+---
+
+## License
 
 This project is licensed under the MIT License.
