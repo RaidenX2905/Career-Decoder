@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/career-decoder-light-512.png" alt="Career Decoder Brand Mark" width="128" height="128">
+  <img src="./assets/career-decoder-light-512.png" alt="Career Decoder Brand Mark" width="128" height="128">
 </p>
 
 <div align="center">
