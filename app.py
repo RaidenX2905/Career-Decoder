@@ -9,7 +9,7 @@ from engine.skill_taxonomy import get_prerequisites_path
 
 st.set_page_config(
     page_title="Career Decoder",
-    page_icon="🧭",
+    page_icon="assets/favicon.png",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
