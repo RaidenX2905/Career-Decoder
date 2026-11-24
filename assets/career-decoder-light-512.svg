@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="112" fill="#F7F8FA"/>
+  <defs>
+    <linearGradient id="c-arc" x1="120" y1="120" x2="380" y2="400" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#182B49"/>
+      <stop offset="100%" stop-color="#243D66"/>
+    </linearGradient>
+    <linearGradient id="emerald-glow" x1="200" y1="360" x2="380" y2="130" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1E7A5E"/>
+      <stop offset="50%" stop-color="#279B78"/>
+      <stop offset="100%" stop-color="#3EDAA8"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Outer C-Compass Arc -->
+  <!-- Arc starts at angle ~45 deg, wraps around 180, ends at angle ~-45 deg -->
+  <path d="M 330 145 C 285 110 220 105 165 145 C 95 198 85 305 140 370 C 195 432 300 435 365 375 C 385 356 398 335 405 310" 
+        fill="none" stroke="url(#c-arc)" stroke-width="46" stroke-linecap="round"/>
+        
+  <!-- Ascending Growth Pathway (3 ascending modular bars / data stepping stones) -->
+  <rect x="175" y="300" width="36" height="50" rx="10" transform="rotate(-45 175 300)" fill="#778397" opacity="0.85"/>
+  <rect x="235" y="240" width="40" height="70" rx="10" transform="rotate(-45 235 240)" fill="url(#emerald-glow)"/>
+  <rect x="300" y="175" width="42" height="90" rx="10" transform="rotate(-45 300 175)" fill="url(#emerald-glow)"/>
+  
+  <!-- Compass North-East Discovery Point (Rotated Diamond) -->
+  <path d="M 390 120 L 415 145 L 390 170 L 365 145 Z" fill="#279B78"/>
+  <circle cx="390" cy="145" r="5" fill="#FFFFFF"/>
+</svg>
